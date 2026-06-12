@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+:root {
+  --color-midnight: #050508;
+  --color-slate-dark: #0E121E;
+  --color-neon-orange: #D4AF37; /* Premium Gold */
+  --color-electric-blue: #F3E5AB; /* Champagne Accent */
+  
+  --bg-primary: #050508;
+  --bg-secondary: #0E121E;
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --glass-panel: rgba(14, 18, 30, 0.82);
+  --glass-panel-heavy: rgba(5, 5, 8, 0.95);
+  
+  --shadow-neon-orange: 0 0 15px rgba(212, 175, 55, 0.4), 0 0 30px rgba(212, 175, 55, 0.2);
+  --shadow-neon-blue: 0 0 15px rgba(243, 229, 171, 0.45), 0 0 30px rgba(243, 229, 171, 0.25);
+  --text-glow-orange: 0 0 8px rgba(212, 175, 55, 0.65), 0 0 20px rgba(212, 175, 55, 0.3);
+  --text-glow-blue: 0 0 8px rgba(243, 229, 171, 0.7), 0 0 20px rgba(243, 229, 171, 0.4);
+}
+
+html.light {
+  --color-midnight: #F9F9FB;
+  --color-slate-dark: #FFFFFF;
+  --color-neon-orange: #AA7C11; /* Contrast Gold / Bronze */
+  --color-electric-blue: #D4AF37; /* Radiant Gold */
+  
+  --bg-primary: #F9F9FB;
+  --bg-secondary: #FFFFFF;
+  --text-primary: #121215;
+  --text-secondary: rgba(18, 18, 21, 0.65);
+  --border-color: rgba(170, 124, 17, 0.15);
+  --glass-panel: rgba(255, 255, 255, 0.9);
+  --glass-panel-heavy: rgba(255, 255, 255, 0.98);
+  
+  --shadow-neon-orange: 0 0 12px rgba(170, 124, 17, 0.25), 0 0 24px rgba(170, 124, 17, 0.12);
+  --shadow-neon-blue: 0 0 12px rgba(212, 175, 55, 0.3), 0 0 24px rgba(212, 175, 55, 0.15);
+  --text-glow-orange: 0 0 5px rgba(170, 124, 17, 0.35);
+  --text-glow-blue: 0 0 5px rgba(212, 175, 55, 0.4);
+}
+
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-midnight: var(--color-midnight);
+  --color-neon-orange: var(--color-neon-orange);
+  --color-electric-blue: var(--color-electric-blue);
+  --color-slate-dark: var(--color-slate-dark);
+}
+
+@layer utilities {
+  /* Dynamic Neon glow and shadows connected to CSS variables */
+  .shadow-neon-orange {
+    box-shadow: var(--shadow-neon-orange);
+  }
+  .shadow-neon-blue {
+    box-shadow: var(--shadow-neon-blue);
+  }
+  .shadow-glow-white {
+    box-shadow: 0 0 15px rgba(170, 124, 17, 0.15), 0 0 35px rgba(212, 175, 55, 0.1);
+  }
+  
+  .text-glow-orange {
+    text-shadow: var(--text-glow-orange);
+  }
+  .text-glow-blue {
+    text-shadow: var(--text-glow-blue);
+  }
+
+  /* Glassmorphism card layouts responding to theme active state */
+  .glass-panel {
+    background: var(--glass-panel);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+  }
+  .glass-panel-heavy {
+    background: var(--glass-panel-heavy);
+    backdrop-filter: blur(18px);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+  }
+  .glass-panel-interactive {
+    background: var(--glass-panel);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .glass-panel-interactive:hover {
+    background: var(--glass-panel-heavy);
+    border-color: var(--color-neon-orange);
+    box-shadow: var(--shadow-neon-orange);
+  }
+
+  /* Grid backgrounds */
+  .neon-grid {
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, rgba(212, 175, 55, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(212, 175, 55, 0.05) 1px, transparent 1px);
+  }
+  .cyber-dots {
+    background-size: 24px 24px;
+    background-image: radial-gradient(circle, rgba(212, 175, 55, 0.06) 1px, transparent 1px);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-midnight);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-slate-dark);
+  border-radius: 4px;
+  border: 1px solid var(--color-midnight);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neon-orange);
+}
+
+/* Animating gradient borders */
+@keyframes rotBorder {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.custom-pulse {
+  animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 5px rgba(212,175,55,0.5)); }
+  50% { opacity: .7; filter: drop-shadow(0 0 15px rgba(243,229,171,0.8)); }
+}
+
+html {
+  scroll-behavior: smooth;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}

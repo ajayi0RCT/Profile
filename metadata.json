@@ -1,0 +1,6 @@
+{
+  "name": "Ajayi Covenant Portfolio",
+  "description": "An elite interactive digital universe portfolio for Ajayi Covenant, featuring cinematic scroll stories, floating virtual planets, glowing code labs, and neural hubs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
