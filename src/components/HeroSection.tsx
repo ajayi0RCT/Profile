@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, Terminal, ArrowRight, ShieldCheck, Cpu, Code2, Layers, HeartHandshake } from 'lucide-react';
 
@@ -36,6 +36,119 @@ export default function HeroSection({ onNavigateToWork, onNavigateToContact }: H
     }
   };
 
+  // Digital hum/ping Web Audio oscillators
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const oscillatorRef = useRef<OscillatorNode | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+
+  const initAudio = () => {
+    if (audioCtxRef.current) return audioCtxRef.current;
+    try {
+      const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+      if (Ctx) {
+        const ctxInstance = new Ctx();
+        audioCtxRef.current = ctxInstance;
+        return ctxInstance;
+      }
+    } catch (e) {
+      console.warn("AudioContext init warning:", e);
+    }
+    return null;
+  };
+
+  const playHoverSound = async () => {
+    const ctx = initAudio();
+    if (!ctx) return;
+    
+    // Resume context if suspended (browser security)
+    if (ctx.state === 'suspended') {
+      try {
+        await ctx.resume();
+      } catch (e) {
+        return; // standard browser security restriction
+      }
+    }
+
+    try {
+      // 1. Digital Quick High-Pitch "Ping" Wave
+      const pingOsc = ctx.createOscillator();
+      const pingGain = ctx.createGain();
+      pingOsc.type = 'sine';
+      pingOsc.frequency.setValueAtTime(1400, ctx.currentTime);
+      pingOsc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.12);
+      
+      pingGain.gain.setValueAtTime(0.012, ctx.currentTime);
+      pingGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+      
+      pingOsc.connect(pingGain);
+      pingGain.connect(ctx.destination);
+      pingOsc.start();
+      pingOsc.stop(ctx.currentTime + 0.14);
+
+      // 2. Subtle Low "Hum / Drone" Wave
+      if (oscillatorRef.current) {
+        try {
+          oscillatorRef.current.stop();
+          oscillatorRef.current.disconnect();
+        } catch (e) {}
+      }
+
+      const humOsc = ctx.createOscillator();
+      const humGain = ctx.createGain();
+      humOsc.type = 'sine';
+      humOsc.frequency.setValueAtTime(105, ctx.currentTime); // Low electric gold resonance base
+      
+      humGain.gain.setValueAtTime(0, ctx.currentTime);
+      humGain.gain.linearRampToValueAtTime(0.015, ctx.currentTime + 0.1); // Smooth gain ramp
+      
+      humOsc.connect(humGain);
+      humGain.connect(ctx.destination);
+      humOsc.start();
+      
+      oscillatorRef.current = humOsc;
+      gainNodeRef.current = humGain;
+    } catch (err) {
+      console.warn("Audio interaction restricted:", err);
+    }
+  };
+
+  const stopHoverSound = () => {
+    if (oscillatorRef.current && gainNodeRef.current && audioCtxRef.current) {
+      try {
+        const ct = audioCtxRef.current.currentTime;
+        gainNodeRef.current.gain.setValueAtTime(gainNodeRef.current.gain.value, ct);
+        gainNodeRef.current.gain.linearRampToValueAtTime(0, ct + 0.12); // smooth fade out
+        
+        const osc = oscillatorRef.current;
+        setTimeout(() => {
+          try {
+            osc.stop();
+            osc.disconnect();
+          } catch(e) {}
+        }, 130);
+      } catch (e) {}
+      oscillatorRef.current = null;
+      gainNodeRef.current = null;
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Avoid dangling oscillators
+      if (oscillatorRef.current) {
+        try {
+          oscillatorRef.current.stop();
+        } catch (e) {}
+      }
+      if (audioCtxRef.current) {
+        try {
+          audioCtxRef.current.close();
+        } catch (e) {}
+      }
+    };
+  }, []);
+
   return (
     <div id="home-station" className="relative w-full min-h-screen py-16 flex items-center justify-center overflow-hidden bg-midnight text-primary">
       {/* Dynamic glow grids underneath */}
@@ -50,59 +163,7 @@ export default function HeroSection({ onNavigateToWork, onNavigateToContact }: H
         {/* LEFT SIDE: Control Dashboard Details */}
         <div className="lg:col-span-7 flex flex-col space-y-6 text-left">
           
-          {/* Accent Badge */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="inline-flex items-center space-x-2 bg-slate-dark/50 border border-neon-orange/20 px-4 py-1.5 rounded-full w-fit backdrop-blur-md"
-          >
-            <Sparkles className="w-4 h-4 text-neon-orange animate-pulse" />
-            <span className="font-mono text-xs tracking-widest text-[#D4AF37] font-bold">DIGITAL CONTROL EXP®</span>
-          </motion.div>
 
-          {/* Circular Profile Avatar of Ajayi Covenant with Glowing Gold Ring */}
-          <div className="flex items-center space-x-5 my-2">
-            <div className="relative group">
-              {/* Outer rotating/pulsing absolute glowing gold ring */}
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#AA7C11] to-[#FFE79A] opacity-75 blur-md group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
-              
-              {/* Decorative golden orbit circle line */}
-              <div className="absolute -inset-2.5 rounded-full border border-[#D4AF37]/35 animate-spin-reverse-slow" />
-              
-              {/* Main circular container */}
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-1 bg-gradient-to-b from-[#FFE79A] via-[#D4AF37] to-[#AA7C11] relative overflow-hidden shrink-0 group shadow-[0_0_30px_rgba(212,175,55,0.5)] transition-all duration-300 group-hover:scale-105">
-                <img 
-                  src="/src/assets/images/covenant_avatar_1781297658135.jpg"
-                  alt="Ajayi Covenant Coding Avatar"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover rounded-full border-2 border-midnight transition-transform duration-700 group-hover:rotate-1 group-hover:scale-110"
-                />
-                {/* Dark overlay for sci-fi atmosphere */}
-                <div className="absolute inset-0 bg-gradient-to-t from-midnight/60 via-transparent to-transparent opacity-90 pointer-events-none" />
-                
-                {/* Tech digital marker inside circle */}
-                <div className="absolute bottom-1.5 inset-x-0 text-center">
-                  <span className="font-mono text-[7px] text-[#FFE79A] uppercase tracking-widest font-extrabold bg-[#050508]/85 px-1.5 py-0.5 rounded-full border border-[#D4AF37]/30">
-                    SYS_PILOT
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-1">
-              <span className="font-mono text-[9px] text-[#D4AF37] tracking-widest uppercase block font-extrabold mb-0.5">System Pilot in Command</span>
-              <h2 className="font-mono text-sm text-[#4DA3FF] tracking-wider block font-black uppercase leading-tight">
-                AJAYI_COVENANT.sys
-              </h2>
-              <div className="flex items-center space-x-2 text-secondary/70">
-                <span className="font-mono text-[8px] tracking-widest uppercase font-semibold">Status:</span>
-                <span className="flex items-center space-x-1 py-0.5 px-2 bg-emerald-500/10 border border-emerald-500/30 rounded text-[8px] text-emerald-400 font-mono font-bold uppercase tracking-wider animate-pulse">
-                  <span className="w-1 h-1 rounded-full bg-emerald-400 inline-block mr-1" />
-                  CODING_MATRIX_STABLE
-                </span>
-              </div>
-            </div>
-          </div>
 
           {/* Large Title Headers */}
           <div>

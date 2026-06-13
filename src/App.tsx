@@ -21,6 +21,24 @@ export default function App() {
   const [hasEntered, setHasEntered] = useState(false);
   const [activeStation, setActiveStation] = useState('home');
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Track page scroll percentage dynamically
+  useEffect(() => {
+    const handleScroll = () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight > 0) {
+        const progress = (window.scrollY / docHeight) * 100;
+        setScrollProgress(progress);
+      } else {
+        setScrollProgress(0);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasEntered]);
 
   // Sync dark theme on document element always
   useEffect(() => {
@@ -81,6 +99,12 @@ export default function App() {
           transition={{ duration: 1.5 }}
           className="relative min-h-screen flex flex-col justify-between"
         >
+          {/* Glowing premium gold thin progress bar at absolute top */}
+          <div 
+            className="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-[#AA7C11] via-[#D4AF37] to-[#FFE79A] shadow-[0_0_12px_rgba(212,175,55,0.7),0_0_4px_rgba(212,175,55,0.4)] z-[9999] transition-all duration-75 ease-out"
+            style={{ width: `${scrollProgress}%` }}
+          />
+
           {/* Interactive Background Particle Network Canvas */}
           <ParticleNetwork />
 
